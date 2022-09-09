@@ -4,8 +4,37 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
-from flask_jwt_extended import create_access_token,JWTManager
+from flask_jwt_extended import create_access_token,JWTManager,get_jwt,jwt_required,JWTManager
+import redis
+
+app = Flask(__name__)
+app.config["JWT_SECRET_KEY"] = "super-secret" 
 api = Blueprint('api', __name__)
+jwt=JWTManager(app)
+
+
+
+
+jwt_redis_blocklist = redis.StrictRedis(
+    host="localhost", port=6379, db=0, decode_responses=True
+)
+
+
+
+@jwt.token_in_blocklist_loader
+def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
+    jti = jwt_payload["jti"]
+    token_in_redis = jwt_redis_blocklist.get(jti)
+    return token_in_redis is not None
+
+@api.route("/logout", methods=["DELETE"])
+@jwt_required()
+def logout():
+    jti = get_jwt()["jti"]
+    jwt_redis_blocklist.set(jti, "", ex=360)
+    return jsonify(msg="Access token revoked")
+
+
 
 
 @api.route('/hello', methods=['POST','GET'])
@@ -39,6 +68,9 @@ def post_registro():
     db.session.commit()
     return jsonify(new_user.serialize()),200
 
+
+
+
 @api.route('/login', methods=['POST'])
 def create_token():
     email = request.json.get("email", None)
@@ -52,4 +84,22 @@ def create_token():
     
   
     access_token = create_access_token(identity=user.id)
+
+
+
+
+ 
+    
     return jsonify({ "token": access_token, "user_id": user.id })
+
+
+
+
+@app.route("/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    
+    return jsonify({"id": user.id, "username": user.username }), 200

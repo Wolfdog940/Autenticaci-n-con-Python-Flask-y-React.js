@@ -1,11 +1,12 @@
 import React from "react";
 import { useState, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 
 const Login = () => {
   const [valores, setValores] = useState({});
   const { store, actions } = useContext(Context);
+  const navigate = useNavigate();
 
   const handleInputChange = (event) => {
     setValores({
@@ -21,9 +22,25 @@ const Login = () => {
   }
 
   function borrar() {
-    actions.borrar_token();
     console.log(store.token, "borrado de token");
     sessionStorage.removeItem("token");
+    fetch(process.env.BACKEND_URL + "/api/logout", {
+      method: "DELETE",
+
+      headers: {
+        Authorization: "Bearer " + store.token,
+        "Content-Type": "application/json",
+      },
+    })
+      .then((resp) => {
+        return resp.json();
+      })
+      .then((resp) => {
+        console.log(resp);
+        actions.borrar_token();
+
+        return resp;
+      });
   }
 
   function logear() {
@@ -43,6 +60,8 @@ const Login = () => {
       .then((resp) => {
         actions.guardar_token(resp.token);
         console.log(store.token);
+        navigate("/protected");
+        //redireccionar usuario a otro componente(con navigate)
 
         return resp;
       });

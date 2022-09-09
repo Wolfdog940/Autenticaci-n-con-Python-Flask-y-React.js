@@ -11,9 +11,9 @@ from api.models import db
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
-from flask_jwt_extended import create_access_token,JWTManager
+from flask_jwt_extended import create_access_token,JWTManager,get_jwt,jwt_required,JWTManager
 from api.models import db, User
-
+import redis
 
 ENV = os.getenv("FLASK_ENV")
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../public/')
@@ -52,6 +52,9 @@ setup_commands(app)
 
 
 app.register_blueprint(api, url_prefix='/api')
+
+
+
 
 
 @app.errorhandler(APIException)
