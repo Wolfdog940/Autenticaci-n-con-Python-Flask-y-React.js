@@ -11,6 +11,7 @@ import { Navbar } from "./component/navbar";
 import { Footer } from "./component/footer";
 import Registro from "./component/registro.jsx";
 import Login from "./component/login.jsx";
+import Protected from "./component/protected.jsx";
 
 const Layout = () => {
   const basename = process.env.BASENAME || "";
@@ -27,6 +28,7 @@ const Layout = () => {
             <Route element={<h1>Not found!</h1>} />
             <Route element={<Registro />} path="/registro" />
             <Route element={<Login />} path="/login" />
+            <Route element={<Protected />} path="/protected" />
           </Routes>
 
           <Footer />
