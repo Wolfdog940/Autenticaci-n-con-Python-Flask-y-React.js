@@ -4,7 +4,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
-from flask_jwt_extended import create_access_token,JWTManager,get_jwt_identity,jwt_required,JWTManager
+from flask_jwt_extended import create_access_token,JWTManager,get_jwt, get_jwt_identity,jwt_required,JWTManager
 import redis
 
 app = Flask(__name__)
